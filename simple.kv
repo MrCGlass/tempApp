@@ -1,0 +1,424 @@
+#: import ListItemButton kivy.uix.listview.ListItemButton
+#: import ListAdapter kivy.adapters.listadapter.ListAdapter
+#: import simple simpleApp
+#: import FileChooserIconLayout kivy.uix.filechooser.FileChooserIconLayout
+
+mainRoot:
+	
+<mainRoot>:
+	main_window: main_window
+	MainWindow:
+		id:main_window
+		orientation: 'vertical'
+		BoxLayout:
+			Label:
+				text: 'Mobile Tempt'
+	
+		BoxLayout:
+			size_hint_y: .15
+			Button:
+				text: 'Log in'
+				on_press: root.getPress(self)
+
+			Button:
+				text: 'Create New'
+				on_press: root.getPress(self)
+				
+				
+		
+<LoginWindow>:	
+	name: 'login'
+	id: login_window
+	orientation: 'vertical'
+	name_input: name_input
+	pass_input: pass_input
+	info_label: info_label
+	Label: 
+		size_hint_y: .10
+		text: 'Welcome'
+		
+	Label:
+		id: info_label
+		text:	
+		
+		
+	BoxLayout:
+		
+		orientation: 'vertical'
+		Label:
+			text: 'Username'
+	
+		TextInput:
+			id: name_input
+			size_hint_x: .50
+			multiline: False
+			
+		Label:
+			text: 'Password'
+			
+		TextInput:
+			size_hint_x:.50
+			id: pass_input
+			multiline: False
+		
+		
+	BoxLayout:
+		size_hint_y: .15
+		Button:
+			text: 'Enter'
+			on_press: root.parent.getPress(self)
+		
+		Button: 
+			text: 'Exit'
+			on_press: root.parent.pageReturn(page=root.name)
+			
+<CreateLogWindow>:	
+	name:'createlog'
+	orientation: 'vertical'
+	name_input: name_input
+	pass_input: pass_input
+	state_input:state_input
+	city_input:city_input
+	confirm_pass: confirm_pass
+	email: email
+	info_label: info_label
+	first_nameInput: first_nameInput
+	last_nameinput: last_nameinput
+	phone: phone_input
+	Label: 
+		text: 'Welcome'
+		size_hint_y: .10
+	Label:
+		id: info_label
+		text:	
+		size_hint_y: .15
+	BoxLayout:
+		size_hint_y: .65
+		orientation: 'vertical'
+		GridLayout:
+			size_hint_y: .45
+			cols: 2
+		
+			
+			Label:
+				text: 'First Name'
+				
+			TextInput:
+				id:first_nameInput
+				multiline: False
+			
+			Label:
+				text: 'Last Name'
+				
+			TextInput:
+				id: last_nameinput
+				multiline: False
+				
+			Label:
+				text: 'Username'
+		
+			TextInput:
+				id: name_input
+				multiline: False
+				
+			Label:
+				text: 'Password'
+				
+			TextInput:
+				id: pass_input
+				multiline: False
+				
+			Label:
+				text: 'Confirm Password'
+			TextInput:
+				id: confirm_pass
+				multiline: False
+				
+			Label:
+				text: 'Email'
+			TextInput:
+				id: email
+				multiline: False
+				
+			Label:
+				text: 'Phone'
+			TextInput:
+				id: phone_input
+				multiline: False
+				
+			Label:
+				text: 'State'
+			TextInput:
+				id: state_input
+				multiline: False
+			
+			Label:
+				text: 'City'
+			TextInput:
+				id: city_input
+				multiline: False
+			Label:
+				text: 'Photo'
+			
+			Label:
+				text: root.file_text
+		FileChooserIconView:
+			id: filechooser 
+			size_hint_y: .25
+			on_touch_up: root.load_photo(filechooser.path,filechooser.selection)
+				
+		
+		
+		
+		
+	BoxLayout:
+		size_hint_y: .10
+		Button:
+			text: 'Submit'
+			on_press: root.parent.getPress(self)
+		
+		Button: 
+			text: 'Exit'
+			on_press: root.parent.pageReturn(root.name)
+			
+<AccountPage>:
+	orientation: 'vertical'
+	job_button:job_button
+	name: 'acctpage'
+	search_button:search_button
+	exit_button:exit_button
+	my_jobButton: my_jobButton
+	user_image:user_image
+	BoxLayout:
+		id:mainlayout
+		acct_info: acct_info
+		job_info: job_info
+		BoxLayout:
+			id: acct_info
+			size_hint_x: .40
+			orientation: 'vertical'
+			Label:
+				text: app.root.user_name
+				size_hint_y: .05
+		
+			BoxLayout:
+				id:user_image
+				size_hint_y: .35
+			
+						
+						
+					
+						
+				
+			
+			BoxLayout:
+				orientation: 'vertical'
+				size_hint_y: .60
+				Label:
+				
+					text: 'About Info'
+				
+		BoxLayout:
+			id:job_info
+			
+			orientation: 'vertical'
+			size_hint_x: .60		
+			Label:
+				size_hint_y: .40
+				text: 'Account'
+			BoxLayout:
+				size_hint_y:.15
+				Button:
+					id: my_jobButton
+					text: 'My Jobs'
+					on_press: root.parent.getPress(self)
+					
+				Button:
+					id: bids_button
+					text: "My Bids"
+					on_press: root.parent.getPress(self)
+					
+			RecycleView:
+				
+			BoxLayout:
+				size_hint_y: .15
+				Button:
+					id:exit_button
+					text:'Exit'
+					on_press: root.parent.pageReturn(page=root.name)
+				Button:
+					id: search_button
+					text: 'Search Jobs'
+					on_press: root.parent.getPress(self)
+					
+				Button:
+					id: job_button
+					text: 'New Job'
+					on_press: root.parent.getPress(self)
+			
+<SearchScreen>:
+	orientation: 'vertical'
+	id:search_screen
+	search_input:search_input
+	search_results:search_results
+	info_label: info_label
+	name:'searchscreen'
+	BoxLayout:
+		size_hint_y: .10
+		orientation: 'vertical'
+		Label:
+			text: 'Job Search'
+			size_hint_y: .25
+		Label:
+			text:
+			id: info_label
+			size_hint_y: .25
+			
+		BoxLayout:
+			size_hint_y: .50
+			TextInput:
+				id:search_input
+				multiline: False
+			Button:
+				text: 'Search'
+				on_press: root.parent.getPress(self)
+			Button:
+				text: 'All Categories'
+				on_press: root.parent.getPress(self)
+
+	ListView:
+		id: search_results
+		item_stings:['index','']
+		adapter:
+			ListAdapter(data=[],cls=simple.JobListbutton,args_converter=search_screen.args_converter)
+		size_hint_y: .80
+		pos: 100,0
+	
+	Button:
+		text:'Exit'
+		size_hint_y: .10
+		on_press: root.parent.pageReturn(page=root.name)
+		
+<JobListbutton>:
+	text: '{}'.format(self.jobs)
+	on_press: app.root.getPress(self)
+	
+
+
+<JobCreatePage>:
+	orientation: 'vertical'
+	name: 'jobcreate'
+	job_name_input:job_name_input
+	location_input: location_input
+	mainbutton:mainbutton
+	descript_input: descript_input
+	info_label: info_label
+	job_city: job_city
+	job_state: job_state
+	header: header
+	submit_button:submit_button
+	
+	Label:
+		id:header
+		text: 'New Job'
+		size_hint_y:.5
+	Label:
+		text:
+		id: info_label
+		size_hint_y: .5
+	GridLayout:
+		cols: 2
+		size_hint_y:.75
+		Label:
+			text:' Job Name'
+		TextInput:
+			id:job_name_input
+		Label:
+			text: 'Job Description'
+		TextInput:
+			id: descript_input
+		Label:
+			text: 'Street Address'
+		TextInput:
+			id: location_input
+			
+		Label:
+			text: 'City'
+		TextInput:
+			id: job_city
+		Label:
+			text: 'State'
+		TextInput:
+			id: job_state
+		Label:
+			text: "Category"
+		BoxLayout:
+			Button:
+				id: mainbutton
+				text: 'Choose'
+				
+		 
+			
+	BoxLayout:
+		size_hint_y: .15
+		Button:
+			id: submit_button
+			text: 'Create Job'
+			on_press: root.parent.getPress(self)
+		Button:
+			text: 'Exit'
+			on_press: root.parent.pageReturn(root.name)
+			
+			
+<ShowJobPage>:
+	orientation: 'vertical'
+	label_title: label_title
+	descript_text: descript_text
+	category_text: category_text
+	location_text: location_text
+	info_layout: info_layout
+	button_panel: button_panel
+	name: 'jobpage'
+	id:job_page
+	job:[]
+	Label:
+		size_hint_y: .20
+		id: label_title
+		text:
+	BoxLayout:
+		orientation: 'vertical'
+			
+		GridLayout:
+			cols:2
+			Label:
+				text: 'Description'
+			Label:
+				text:
+				id: descript_text
+			Label:
+				text: 'Location'
+			Label:
+				text: 
+				id: location_text
+				
+			Label:
+				text: 'Category'
+			
+			Label:
+				text: 
+				id: category_text
+		BoxLayout:
+			id:content
+		BoxLayout:
+			id:info_layout
+			
+	
+			
+	BoxLayout:
+		id: button_panel
+		size_hint_y: .15
+		Button:
+			text: 'Exit'
+			on_press: root.parent.pageReturn(root.name)
+<Imagephoto>
+	texture: root.texture 

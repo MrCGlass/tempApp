@@ -19,7 +19,7 @@ import json,io
 
 
 class JobCreatePage(BoxLayout):
-    categoryList = ['Lawn','Technolog','Handyman','Maid','Baby Sitter']
+    categoryList = ['Lawn','Technolog','Handyman','Cleaning','Home Care']
     info_label = ObjectProperty()
     mainbutton = ObjectProperty()
     def __init__(self,*args,**kwargs):
@@ -49,7 +49,7 @@ class ShowJobPage(BoxLayout):
         app_id = 'j0qyg2HfhEX4NBgOwXW0'
         app_code = 'uQPNqNV9lEuioDXUP4ybDg'
         
-        map_template = 'https://image.maps.api.here.com/mia/1.6/mapview?app_id={}&app_code={}&ci={}'.format(app_id,app_code,self.location_text.text)
+        map_template = 'https://image.maps.api.here.com/mia/1.6/ mapview?app_id={}&app_code={}&ci={}'.format(app_id,app_code,self.location_text.text)
         request = UrlRequest(map_template,self.display_map)
           
         if self.parent.user_name == self.job[4]:
@@ -315,6 +315,14 @@ class mainRoot(BoxLayout):
             self.jobState = self.job_create.job_state.text
             self.jobCity = self.job_create.job_city.text
 
+            self.jobinfo = {'jobname': self.jobname,
+                            'jobdescription':self.job_descript,
+                            'joblocation': self.job_location,
+                            'jobcategory': self.job_category,
+                            'jobstate': self.jobState,
+                            'jobCity': self.jobCity
+                            }
+
             for x in [self.jobname,self.jobState,self.jobCity,self.job_descript,self.job_location,self.job_category]:
                  if  x == '' or x == None:
                     self.children[0].info_label.text = 'please enter valid information'
@@ -330,7 +338,7 @@ class mainRoot(BoxLayout):
             return
 
         elif args[0].text == 'Submit Edit':
-            self.olddata = self.user_data
+            self.olddata = self.jobinfo
             print(self.olddata)
             
             return
@@ -421,6 +429,7 @@ class mainRoot(BoxLayout):
                     self.get_connected() 
 
     def handel_data(self,data):
+        print(data)
         if data['tag'] == 'message':
             self.children[0].info_label.text = data['2']
             try:
@@ -428,10 +437,16 @@ class mainRoot(BoxLayout):
                     self.clear_widgets()
                     self.account_page = AccountPage(data)
                     self.add_widget(self.account_page)
-                    self.user_data = data['account'][5]
+                    self.user_data = data['account']
                 if data['status'] == 'created':
                     self.clear_widgets()
                     self.add_widget(self.account_page)
+
+                if data['status'] == 'newuser':
+                    self.logIn = LoginWindow()
+                    self.clear_widgets()
+                    self.logIn.info_label.text = 'User Created You Can access your account'
+                    self.add_widget(self.logIn)
                     
             except Exception as e:
                 print(e,9)

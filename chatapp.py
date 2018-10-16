@@ -165,7 +165,7 @@ class mainwindow(wx.Frame):
                             data['password'],data['email'],data['phone'],data['usercity'],
                             data['userstate'],str(data['userimage'])))
             con.commit()
-            message = {'tag':'message', 2: 'New Member added','status':'pass' }
+            message = {'tag':'message', 2: 'New Member added','status':'newuser' }
 
         except Exception as e:
             message = {'tag':'message', 2:'Error creating member' ,'status':'fail'}
@@ -221,16 +221,9 @@ class mainwindow(wx.Frame):
             cursor.execute("INSERT INTO jobs (name,category,description,location,manager,state,city) VALUES (?, ?, ?, ?, ?, ?, ?)",
                            (data['name'],data['category'],data['description'],data['location'],data['manager'],data['state'],data['city']))
             con.commit()
-         
-            cursor.execute('SELECT job FROM members WHERE username == (?)', (data['manager'],))
-            myjobs = cursor.fetchall()
-         
-            if myjobs[0][0] == None:
-                myjobs.pop(0)
-            myjobs.append(data)
-            myjobs = json.dumps(myjobs)
+            
            
-            cursor.execute("UPDATE members SET job = ? WHERE username = ?",(myjobs,data['manager']))
+            cursor.execute("UPDATE members SET job = ? WHERE username = ?",(json.dumps(data),data['manager']))
             con.commit()
             message = { 'tag':'message', 2:'Job Created','status': 'created' }
             

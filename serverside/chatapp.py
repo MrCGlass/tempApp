@@ -2,7 +2,7 @@ import wx,socket,asyncio
 import threading, json,sqlite3 as sql
 
 
-
+## Main widget Screen (needs update) ##
 class mainScreen(wx.Panel):
     
     def __init__(self,*args,**kwargs):
@@ -15,7 +15,8 @@ class mainScreen(wx.Panel):
         self.container.Add(self.infobox,1,wx.EXPAND)
         self.container.Add(self.logger,1,wx.EXPAND)
         self.SetSizerAndFit(self.container)
-
+        
+    # widget setup #
     def setupWidgets(self,server,parent,socket):
         self.container = wx.BoxSizer(orient= wx.HORIZONTAL)
         self.infobox = wx.BoxSizer(orient= wx.VERTICAL)
@@ -27,7 +28,7 @@ class mainScreen(wx.Panel):
         self.serverButton.Bind(wx.EVT_BUTTON,handler=lambda x: server(socket))
         self.stopServer.Bind(wx.EVT_BUTTON,handler=parent.stopServer)
 
-
+## root window ##
 class mainwindow(wx.Frame):
     
     con = sql.Connection('appdata.db')
@@ -57,11 +58,13 @@ class mainwindow(wx.Frame):
         
         self.Update()
    
-
+    # start server threads #
     def startServer(self, s):
 
         self.connectionThread.start()
-        self.messageThread.start()          
+        self.messageThread.start()
+
+    # create initial database #
         
     def create_base(self,cursor):
         cursor.execute("CREATE TABLE IF NOT EXISTS members(firstname TEXT, lastname TEXT,\
@@ -71,10 +74,12 @@ class mainwindow(wx.Frame):
         cursor.execute('CREATE TABLE IF NOT EXISTS jobs(name TEXT, location TEXT, category TEXT,\
                         description TEXT, manager TEXT, city TEXT, state TEXT, photos BLOB)')
 
+    
+    # listen for new device connections #
     def new_connection(self,s):
           while self.connected:
             try:
-                 
+                # add device to users list #
                 c,addr = s.accept()
                 self.screen.logger.AppendText('Connection from: {}, {} \n'.format(str(addr),str(c)))
                 self.userlist.append((c,addr))
@@ -83,39 +88,46 @@ class mainwindow(wx.Frame):
                 self.screen.logger.AppendText(str(e))
             else:
                 pass
-
+    # get messages from users #
     def user_messages(self,s):
         while self.connected:
             x = 0
             for user in self.userlist:
-                
                 try:
-                    data = user[0].recv(8000)
+
+                    # get message #
+                    data = user[0].recv(10000)
                     self.screen.logger.AppendText('request from {}: {} \n'.format(user[1],data.decode()))
                     data = data.decode()
         
                     data = json.loads(data)
-                 
+
+                    # handle log In request #
                     if data['tag'] == 'logIn':
                         self.screen.logger.AppendText('User {}: requests login \n'.format(data['username']))
                         user[0].send(self.getlogin(data))
 
+                    # handle new user requset#
                     if data['tag'] == 'createNewUser':
                         self.screen.logger.AppendText('User {}: requests to be a member \n'.format(data['username']))                              
                         user[0].send(self.create_new_user(data))
 
+                    # handle job searcch request #
                     if data['tag'] == 'search_request':
                         self.screen.logger.AppendText('User {}: requests for jobs \n'.format(data['username']))         
                         user[0].send(self.get_search(data))
 
+                    # handle new job request #
                     if data['tag'] == 'newjob':
                         self.screen.logger.AppendText('user {}:created a new job \n'.format(data['manager']))
                         user[0].send(self.new_job(data))
 
+                    # handle user job request 
                     if data['tag'] == 'myjobs':
                         self.screen.logger.AppendText('user {}: requests presonal jobs \n'.format(data['username']))
                         user[0].send(self.get_user_jobs(data))
-
+                    
+                    # all category request #
                     if data['tag'] == 'getCategorie':
                         self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
                         user[0].send(self.get_category(data))
@@ -128,6 +140,7 @@ class mainwindow(wx.Frame):
                 finally:
                     x += 1
 
+    # handle job search #
     def get_search(self,data):
         con = sql.Connection('appdata.db')
         cursor = con.cursor()
@@ -153,6 +166,7 @@ class mainwindow(wx.Frame):
             message = json.dumps(message)
             return message.encode()
 
+    # new user handler #
     def create_new_user(self,data):
         con = sql.Connection('appdata.db')
         cursor = con.cursor()
@@ -177,7 +191,8 @@ class mainwindow(wx.Frame):
             message = json.dumps(message)
             message = message.encode()
             return message
-                    
+
+    # user log in handler #
     def getlogin(self,data):
         con = sql.Connection('appdata.db')
         cursor = con.cursor()
@@ -212,7 +227,8 @@ class mainwindow(wx.Frame):
             message = json.dumps(message)
             message = message.encode()
             return message
-
+        
+    # user new job handler #
     def new_job(self,data):
         con = sql.connect('appdata.db')
         cursor = con.cursor()
@@ -220,10 +236,13 @@ class mainwindow(wx.Frame):
         try :
             cursor.execute("INSERT INTO jobs (name,category,description,location,manager,state,city) VALUES (?, ?, ?, ?, ?, ?, ?)",
                            (data['name'],data['category'],data['description'],data['location'],data['manager'],data['state'],data['city']))
-            con.commit()
+
+            cursor.execute('Select * from jobs WHERE manager = ?',(data['manager']))
+
+            job = cursor.fetchall()
             
            
-            cursor.execute("UPDATE members SET job = ? WHERE username = ?",(json.dumps(data),data['manager']))
+            cursor.execute("UPDATE members SET job = ? WHERE username = ?",(json.dumps(job),data['manager']))
             con.commit()
             message = { 'tag':'message', 2:'Job Created','status': 'created' }
             
@@ -240,7 +259,8 @@ class mainwindow(wx.Frame):
             con.close()
             message = json.dumps(message)
             return message.encode()
-
+        
+    # get user jobs handler #
     def get_user_jobs(self,data):
         con = sql.connect('appdata.db')
         cursor = con.cursor()
@@ -259,7 +279,8 @@ class mainwindow(wx.Frame):
             con.close()
             message = json.dumps(message)
             return message.encode()
-
+        
+    # all category search handler #
     def get_category(self,data):
 
         con =sql.connect('appdata.db')
@@ -278,6 +299,8 @@ class mainwindow(wx.Frame):
             con.close()
             message = json.dumps(message)
             return message.encode()
+
+    # server stop handler( needs update)
     def stopServer(self,event):
         self.connected = False
         print('false')

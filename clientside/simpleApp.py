@@ -17,7 +17,7 @@ import socket,threading,os
 import json,io
 
 
-
+## Job Creation page ##
 class JobCreatePage(BoxLayout):
     categoryList = ['Lawn','Technolog','Handyman','Cleaning','Home Care']
     info_label = ObjectProperty()
@@ -26,25 +26,29 @@ class JobCreatePage(BoxLayout):
         super(JobCreatePage,self).__init__()
         method = args[0]
         dropdown = DropDown()
+        
         for cat in self.categoryList:
             btn = Button(text=cat,size_hint_y=None,height=44)
-            btn.bind(on_release=lambda btn:dropdown.select(btn.text))
-
+            btn.bind(on_release=lambda btn:dropdown.select(btn.text))\
             dropdown.add_widget(btn)
+            
         self.mainbutton.bind(on_release=dropdown.open)
         dropdown.bind(on_select=lambda instance,x:setattr(self.mainbutton,'text',x))
+        
         if method == 'edit':
             self.header.text = 'Edit Job'
             self.submit_button.text = 'Submit Edit'
             
 
         
-
+## Job Display Page ##
 class ShowJobPage(BoxLayout):
     button_panel = ObjectProperty()
     editbutton = ObjectProperty()
     def __init__(self,*args,**kwargs):
           super(ShowJobPage,self).__init__(*args,**kwargs)
+
+    # get job map info #
     def get_display(self):
         app_id = 'j0qyg2HfhEX4NBgOwXW0'
         app_code = 'uQPNqNV9lEuioDXUP4ybDg'
@@ -57,7 +61,7 @@ class ShowJobPage(BoxLayout):
             self.editbutton.bind(on_press=self.parent.getPress)
             self.button_panel.add_widget(self.editbutton)
                
-
+    # display job location map #
     def display_map(self,request,data):
         
         data = io.BytesIO(data)
@@ -67,9 +71,13 @@ class ShowJobPage(BoxLayout):
             Rectangle(texture=self.image.texture,
                       size=(self.image.width,self.image.height),
                       pos=(250,50))
-              
+
+## Search Display Screen ##             
 class SearchScreen(BoxLayout):
+      
     data_item = ListProperty()
+    
+    # convert list item button data #
     def args_converter(self,index,data_item):
         if isinstance(data_item,list):
             job = data_item[0]
@@ -79,15 +87,14 @@ class SearchScreen(BoxLayout):
         return {'jobs':job,'data_item':self.data_item}
     
 
-class Jobslayout(FloatLayout):
-    def __init__(self,*args,**kwargs):
-        super(Jobslayout,self).__init__(*args,**kwargs)
-        
 
+        
+## Job search list Buttons ##
 class JobListbutton(ListItemButton):
     jobs = StringProperty()
     data_item = ListProperty()
 
+# User Profile Image Container ##
 class Imagephoto(BoxLayout):
     texture= ObjectProperty()
     def __init__(self,*args,**kwargs):
@@ -95,9 +102,10 @@ class Imagephoto(BoxLayout):
         with self.canvas:
             Color(1,1,0)
         
-       
+## User Profile Image ## 
 class userphoto(Imagephoto):
 
+    # Image setup #
     def setup(self,data):
         try:
             data = io.BytesIO(data)
@@ -115,8 +123,7 @@ class userphoto(Imagephoto):
         return
     
         
-
-    
+## Account Page Display ##
 class AccountPage(BoxLayout):
     search_button=ObjectProperty()
     exit_button = ObjectProperty()
@@ -131,7 +138,8 @@ class AccountPage(BoxLayout):
         
         self.data = bytes(json.loads(args[0]['account'][9]))
         Clock.schedule_once(self.setup_photo,.21)
-        
+
+    ## User Profile Image Call ##
     def setup_photo(self,dt):
         
         photo_widget = userphoto()
@@ -139,8 +147,8 @@ class AccountPage(BoxLayout):
         photo_widget.setup(self.data)
         self.user_image.add_widget(photo_widget)
         return
-        
-        
+
+## New User Creation Page ##
 class CreateLogWindow(BoxLayout):
     info_label = ObjectProperty()
     phone = ObjectProperty()
@@ -161,6 +169,7 @@ class CreateLogWindow(BoxLayout):
     def __init__(self,*args,**kwargs):
         super(CreateLogWindow,self).__init__(*args,**kwargs)
 
+    # Get New User Profile Image#
     def load_photo(self,path,filename):
         if len(filename):
             try:
@@ -174,14 +183,16 @@ class CreateLogWindow(BoxLayout):
                 print(e)
             finally:
                     pass
-          
-                   
+        return
+
+        
+##  Initial Window ##             
 class MainWindow(BoxLayout):
     
     def __init__(self,*args,**kwargs):
         super(MainWindow,self).__init__(*args,**kwargs)    
 
-                  
+## User Login In Window ##                 
 class LoginWindow(BoxLayout):
     info_label = ObjectProperty()
     name_input = ObjectProperty()
@@ -189,7 +200,7 @@ class LoginWindow(BoxLayout):
     def __init__(self,*args,**kwargs):
         super(LoginWindow,self).__init__(*args, **kwargs)
 
-
+## Root Window ##
 class mainRoot(BoxLayout):
 
     orientation = 'verticle'
@@ -205,6 +216,7 @@ class mainRoot(BoxLayout):
     job_page = ObjectProperty()
     old_page = ObjectProperty()
     user_data = ObjectProperty()
+    jobinfo = ObjectProperty()
     
     first_name = StringProperty()
     last_name = StringProperty()
@@ -231,19 +243,25 @@ class mainRoot(BoxLayout):
         self.connected = False
         self.messageThread = threading.Thread(target=self.get_messages)
         self.get_connected()
-               
+
+    #  Main Button Imput handler #
     def getPress(self,*args,**kwargs):
+
+        # create new user #
         if args[0].text == 'Create New':
             self.create_login = CreateLogWindow()
             self.clear_widgets()
             self.add_widget(self.create_login)
             return
+
+        # User Login #
         elif args[0].text == "Log in":
             self.clear_widgets()
             self.login_window = LoginWindow()
             self.add_widget(self.login_window)
             return
 
+        # Sumit new user info #
         elif args[0].text == 'Submit':
             self.user_name = self.create_login.name_input.text
             self.user_pass = self.create_login.pass_input.text
@@ -274,7 +292,8 @@ class mainRoot(BoxLayout):
             self.sock.sendall(data)
             self.children[0].info_label.text = 'Creating User Please Wait'
             return
-        
+
+        # User Login #
         elif args[0].text == 'Enter':
             self.user_name = self.login_window.name_input.text
             self.user_pass = self.login_window.pass_input.text
@@ -287,7 +306,8 @@ class mainRoot(BoxLayout):
             self.sock.send(data.encode())
             self.login_window.info_label.text = "Loging In Please Wait"
             return
-           
+
+        # Job Search #
         elif args[0].text =='Search':
             self.user_search = self.search_screen.search_input.text
             if not self.user_search:
@@ -298,15 +318,17 @@ class mainRoot(BoxLayout):
             self.sock.send(data.encode())
             return
 
+        # Get Job create page #
         elif args[0].text =='New Job':
             self.swapwidgets(widget=args[0].text)
             return
-            
+
+        # Get Job Search Page #  
         elif args[0].text == 'Search Jobs':
             self.swapwidgets(widget=args[0].text)
             return
 
-    
+        # Submit New Job Data #
         elif args[0].text == 'Create Job':
             self.jobname = self.job_create.job_name_input.text
             self.job_descript = self.job_create.descript_input.text
@@ -315,13 +337,7 @@ class mainRoot(BoxLayout):
             self.jobState = self.job_create.job_state.text
             self.jobCity = self.job_create.job_city.text
 
-            self.jobinfo = {'jobname': self.jobname,
-                            'jobdescription':self.job_descript,
-                            'joblocation': self.job_location,
-                            'jobcategory': self.job_category,
-                            'jobstate': self.jobState,
-                            'jobCity': self.jobCity
-                            }
+           
 
             for x in [self.jobname,self.jobState,self.jobCity,self.job_descript,self.job_location,self.job_category]:
                  if  x == '' or x == None:
@@ -337,27 +353,35 @@ class mainRoot(BoxLayout):
             self.sock.send(data)
             return
 
+        # Submit Job Edit Data #        
         elif args[0].text == 'Submit Edit':
-            self.olddata = self.jobinfo
-            print(self.olddata)
-            
+            info = self.job_setup(self.user_data)
+            data = {'tag': 'edit job', 'jobinfo':info}
+            data = json.dumps(data)
+            data = data.encode()
+            self.sock.send(data)
             return
 
+        # Job Search List Button Handler #
         elif isinstance(args[0],ListItemButton) :
+            # send category search 
             if (args[0].jobs in self.categoryList):
                 category = str(args[0].jobs).lower()
                 data = {'tag':'getCategorie','username':self.user_name,'category':category}
                 data = json.dumps(data)
                 data = data.encode()
                 self.sock.send(data)
+            # get job  page #
             else:
                 self.swapwidgets(widget=[args,args[0]])
             return
 
+        # Get Job Edit Page #
         elif args[0].text == 'Edit':
             self.swapwidgets(widget=args[0].text)
             return
-        
+
+        # get personal jobs #
         elif args[0].text == 'My Jobs':
             data = {'tag':'myjobs','username':self.user_name}
             data = json.dumps(data)
@@ -365,14 +389,18 @@ class mainRoot(BoxLayout):
             self.swapwidgets(widget=args[0].text)
             self.sock.send(data)
             return
+
+        # get all categories #
         elif args[0].text == 'All Categories':
             self.search_screen.search_results.item_strings = self.categoryList
             self.search_screen.search_results.adapter.data.clear()
             self.search_screen.search_results.adapter.data.extend(self.categoryList)
             self.search_screen.search_results._trigger_reset_populate()
             self.search_screen.info_label.text = 'All Categories'
+            return
                 
 
+    # handle back button #
     def pageReturn(self,page):
         self.clear_widgets()
         if page == 'login':
@@ -395,7 +423,9 @@ class mainRoot(BoxLayout):
             new_widget = self.oldpage
         
         self.add_widget(new_widget)
+        return
 
+    # get connection (needs update) #
     def get_connected(self):
         if self.connected == False:
             try:
@@ -412,6 +442,7 @@ class mainRoot(BoxLayout):
         else:
             return
         
+    # get server message (need update) #
     def get_messages(self):
         while self.connected:
             try:
@@ -426,8 +457,9 @@ class mainRoot(BoxLayout):
 
             finally:
                 if self.connected == False:
-                    self.get_connected() 
-
+                    self.get_connected()
+                    
+    # handle server messages #
     def handel_data(self,data):
         print(data)
         if data['tag'] == 'message':
@@ -437,7 +469,8 @@ class mainRoot(BoxLayout):
                     self.clear_widgets()
                     self.account_page = AccountPage(data)
                     self.add_widget(self.account_page)
-                    self.user_data = data['account']
+
+                    
                 if data['status'] == 'created':
                     self.clear_widgets()
                     self.add_widget(self.account_page)
@@ -447,7 +480,8 @@ class mainRoot(BoxLayout):
                     self.clear_widgets()
                     self.logIn.info_label.text = 'User Created You Can access your account'
                     self.add_widget(self.logIn)
-                    
+                if data['account']:
+                    self.user_data = data
             except Exception as e:
                 print(e,9)
             finally:
@@ -455,7 +489,10 @@ class mainRoot(BoxLayout):
             
         if data['tag'] == 'search':
                 self.getSearch(data)
-                
+               
+        return
+
+    # handle page swap #
     def swapwidgets(self,widget):
     
         if widget == 'Search Jobs' or 'My Job':
@@ -465,6 +502,7 @@ class mainRoot(BoxLayout):
 
         if widget == 'New Job':
             self.job_create = JobCreatePage('new')
+            
             self.clear_widgets()
             self.add_widget(self.job_create)
 
@@ -486,7 +524,9 @@ class mainRoot(BoxLayout):
             self.clear_widgets()
             self.add_widget(self.job_page)
             self.job_page.get_display()
-        
+        return
+
+    # handles job search list #
     def getSearch(self,data):
         jobs = data['category']
         self.search_screen.search_results.item_strings = jobs
@@ -494,8 +534,31 @@ class mainRoot(BoxLayout):
         self.search_screen.search_results.adapter.data.extend(jobs)
         self.search_screen.search_results._trigger_reset_populate()
         self.search_screen.info_label.text = data['2']
+        return
+    
+    # handle job edit #
+    def job_setup(self,data):
+        if self.job_create.job_name_input.text != '':
+            data['name'] = self.job_create.job_name.text
 
-        
+        if self.job_create.descript_input.text != '':
+            data['description'] = self.job_create.job_description.text
+
+        if self.job_create.location_input.text != '':
+            data['location'] = self.job_create.job_description.text
+
+        if self.job_create.mainbutton.text.lower() != 'choose':
+            data['category'] = self.job_create.mainbutton.text.lower()
+
+        if self.job_create.job_state.text != '':
+            data['state'] = self.job_create.job_state.text
+
+        if self.job_create.job_city.text != '':
+            data['city'] = self.job_create.job_city.text
+        print(data)
+        return data
+
+# app root #        
 class simpleApp(App):
     def __init__(self,*args,**kwargs):
         super(simpleApp,self).__init__(*args,**kwargs)

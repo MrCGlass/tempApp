@@ -19,7 +19,7 @@ import json,io
 
 ## Job Creation page ##
 class JobCreatePage(BoxLayout):
-    categoryList = ['Lawn','Technolog','Handyman','Cleaning','Home Care']
+    categoryList = ['Lawn','Technology','Handyman','General Labor','Home Care']
     info_label = ObjectProperty()
     mainbutton = ObjectProperty()
     def __init__(self,*args,**kwargs):
@@ -29,7 +29,7 @@ class JobCreatePage(BoxLayout):
         
         for cat in self.categoryList:
             btn = Button(text=cat,size_hint_y=None,height=44)
-            btn.bind(on_release=lambda btn:dropdown.select(btn.text))\
+            btn.bind(on_release=lambda btn:dropdown.select(btn.text))
             dropdown.add_widget(btn)
             
         self.mainbutton.bind(on_release=dropdown.open)
@@ -53,7 +53,7 @@ class ShowJobPage(BoxLayout):
         app_id = 'j0qyg2HfhEX4NBgOwXW0'
         app_code = 'uQPNqNV9lEuioDXUP4ybDg'
         
-        map_template = 'https://image.maps.api.here.com/mia/1.6/ mapview?app_id={}&app_code={}&ci={}'.format(app_id,app_code,self.location_text.text)
+        map_template = 'https://image.maps.api.here.com/mia/1.6/mapview?app_id={}&app_code={}&ci={}'.format(app_id,app_code,self.location_text.text)
         request = UrlRequest(map_template,self.display_map)
           
         if self.parent.user_name == self.job[4]:
@@ -176,9 +176,12 @@ class CreateLogWindow(BoxLayout):
                 with open(os.path.join(path,filename[0]),'rb') as data:
                     self.file_text = str(data.name)
                     image = Image(source=os.path.join(path,filename[0]))
-                  
-                    self.photo_file = data.read()
-                    
+                    imagesize = pimage.open(os.path.join(path,filename[0]))
+                    imageio = io.BytesIO()
+            
+                    imagesize = imagesize.resize((280,320))
+                    imagesize.save(imageio,'png')
+                    self.photo_file = imageio.getvalue()
             except Exception as e: 
                 print(e)
             finally:
@@ -236,7 +239,7 @@ class mainRoot(BoxLayout):
 
     user_phone = NumericProperty()
     
-    categoryList = ['Lawn','Technolog','Handyman','Maid','Baby Sitter']
+    categoryList = ['Lawn','Technology','Handyman','General Labor','Home Care']
 
     def __init__(self,*args,**kwargs):
         super(mainRoot,self).__init__(*args,**kwargs)
@@ -356,7 +359,7 @@ class mainRoot(BoxLayout):
         # Submit Job Edit Data #        
         elif args[0].text == 'Submit Edit':
             info = self.job_setup(self.user_data)
-            data = {'tag': 'edit job', 'jobinfo':info}
+            data = {'tag': 'editjob', 'jobinfo':info}
             data = json.dumps(data)
             data = data.encode()
             self.sock.send(data)
@@ -409,7 +412,7 @@ class mainRoot(BoxLayout):
         if page == 'acctpage':
             new_widget = self.login_window
             if new_widget == None:
-                new_widget = LoginWindow()
+                new_widget = self.login_window
             
         if page == 'createlog':
             new_widget = self.main_window
@@ -436,7 +439,6 @@ class mainRoot(BoxLayout):
             except Exception as e:
                 print(e)
                 self.connected = False
-
             else:
                 pass      
         else:
@@ -446,7 +448,7 @@ class mainRoot(BoxLayout):
     def get_messages(self):
         while self.connected:
             try:
-                c = self.sock.recv(10000)
+                c = self.sock.recv(1000000)
                 c = c.decode()
                 c = json.loads(c)
                 self.handel_data(c)
@@ -461,7 +463,7 @@ class mainRoot(BoxLayout):
                     
     # handle server messages #
     def handel_data(self,data):
-        print(data)
+
         if data['tag'] == 'message':
             self.children[0].info_label.text = data['2']
             try:
@@ -476,17 +478,21 @@ class mainRoot(BoxLayout):
                     self.add_widget(self.account_page)
 
                 if data['status'] == 'newuser':
-                    self.logIn = LoginWindow()
                     self.clear_widgets()
-                    self.logIn.info_label.text = 'User Created You Can access your account'
-                    self.add_widget(self.logIn)
+                    self.login_window.info_label.text = 'User Created You Can access your account'
+                    self.add_widget(self.login_window)
+
+
                 if data['account']:
-                    self.user_data = data
+                    if data['account'][5] != None:
+                        self.user_data = json.loads(data['account'][5])
             except Exception as e:
                 print(e,9)
             finally:
                 pass
-            
+        if data['tag'] == 'jobedit':
+            self.clear_widgets()
+            self.add_widget(self.account_page)
         if data['tag'] == 'search':
                 self.getSearch(data)
                
@@ -502,7 +508,6 @@ class mainRoot(BoxLayout):
 
         if widget == 'New Job':
             self.job_create = JobCreatePage('new')
-            
             self.clear_widgets()
             self.add_widget(self.job_create)
 
@@ -510,7 +515,6 @@ class mainRoot(BoxLayout):
             self.job_create = JobCreatePage('edit')
             self.clear_widgets()
             self.add_widget(self.job_create)
-            
 
         if  isinstance(widget,list):
             print(widget[1].data_item)
@@ -538,23 +542,52 @@ class mainRoot(BoxLayout):
     
     # handle job edit #
     def job_setup(self,data):
-        if self.job_create.job_name_input.text != '':
-            data['name'] = self.job_create.job_name.text
 
-        if self.job_create.descript_input.text != '':
-            data['description'] = self.job_create.job_description.text
 
-        if self.job_create.location_input.text != '':
-            data['location'] = self.job_create.job_description.text
+        for x in data:
+            if x[0] == self.job_page.label_title.text:
+                data = {}
+                if ((self.job_create.job_name_input.text != None) and
+                    (self.job_create.job_name_input.text!='')):
+                    data['oldname'] = self.job_page.label_title.text
+                    data['newname'] = self.job_create.job_name_input.text
 
-        if self.job_create.mainbutton.text.lower() != 'choose':
-            data['category'] = self.job_create.mainbutton.text.lower()
+                else:
+                    data['oldname'] = x[0]
+                    data['newname'] = x[0]
 
-        if self.job_create.job_state.text != '':
-            data['state'] = self.job_create.job_state.text
+                if (self.job_create.descript_input.text !=  None and
+                    (self.job_create.descript_input.text!='')):
+                    data['description'] = self.job_create.descript_input.text
 
-        if self.job_create.job_city.text != '':
-            data['city'] = self.job_create.job_city.text
+                else:
+                    data['description'] = x[3]
+                    
+                if (self.job_create.location_input.text != None and
+                    (self.job_create.location_input.text !='')):
+                    data['location'] = self.job_create.location_input.text
+
+                else:
+                    data['location'] = x[1]
+
+                if self.job_create.mainbutton.text.lower() != 'choose':
+                    data['category'] = self.job_create.mainbutton.text.lower()
+                else:
+                    data['category'] = x[2]
+
+                if (self.job_create.job_state.text != None and
+                    (self.job_create.job_state.text !='')):
+                    data['state'] = self.job_create.job_state.text
+                else:
+                    data['state'] = x[6]
+
+                if (self.job_create.job_city.text != None and
+                    (self.job_create.job_city.text !='')):
+                    data['city'] = self.job_create.job_city.text
+                else:
+                    data['city'] = x[5]
+                data['manager'] = self.user_name
+                
         print(data)
         return data
 

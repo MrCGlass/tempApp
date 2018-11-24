@@ -96,7 +96,7 @@ class mainwindow(wx.Frame):
                 try:
 
                     # get message #
-                    data = user[0].recv(10000)
+                    data = user[0].recv(1000000)
                     self.screen.logger.AppendText('request from {}: {} \n'.format(user[1],data.decode()))
                     data = data.decode()
         
@@ -131,6 +131,11 @@ class mainwindow(wx.Frame):
                     if data['tag'] == 'getCategorie':
                         self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
                         user[0].send(self.get_category(data))
+
+                    if data['tag'] == 'editjob':
+                        self.screen.logger.AppendText('user {}: request job edit\n'.format(data['jobinfo']['manager']))
+                        user[0].send(self.get_job_edit(data['jobinfo']))
+                        
                         
                         
                 except Exception as e:
@@ -242,7 +247,7 @@ class mainwindow(wx.Frame):
             job = cursor.fetchall()
             
            
-            cursor.execute("UPDATE members SET job = ? WHERE username = ?",(json.dumps(job),data['manager']))
+            cursor.execute("UPDATE members SET job = ? WHERE username == ?",(json.dumps(job),data['manager']))
             con.commit()
             message = { 'tag':'message', 2:'Job Created','status': 'created' }
             
@@ -300,11 +305,38 @@ class mainwindow(wx.Frame):
             message = json.dumps(message)
             return message.encode()
 
-    # server stop handler( needs update)
+    def get_job_edit(self,data):
+
+        con = sql.connect('appdata.db')
+        cursor = con.cursor()
+
+        try:
+            cursor.execute('UPDATE Jobs SET name = ?, category = ?, location = ?, city = ?, state = ?, description = ?\
+                           WHERE manager == ? and name == ? ' , (data['newname'], data['category'],data['location'],
+                                                                 data['city'],data['state'],
+                                                                data['description'],data['manager'],data['oldname']))
+
+            
+
+            cursor.execute('SELECT * from jobs where manager == ?',(data['manager'],))
+            jobs = cursor.fetchall()
+
+            cursor.execute('UPDATE members set job = ? WHERE username == ?',(json.dumps(jobs),data['manager']))
+            con.commit()
+            message = {'tag': 'jobedit', 2: 'Edit Successful', 'status': 'pass'}
+        except Exception as e:
+            message = {'tag': 'message',2: 'error editing job','status': 'fail'}
+            print(e)
+
+        finally:
+            cursor.close()
+            con.close()
+            message = json.dumps(message)
+            return message.encode()
+    # server stop handler( needs update) #
     def stopServer(self,event):
         self.connected = False
         print('false')
-
 
 
 async def main():

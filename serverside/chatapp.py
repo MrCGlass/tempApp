@@ -46,15 +46,16 @@ class mainwindow(wx.Frame):
         s = socket.socket(family=socket.AF_INET,type=socket.SOCK_STREAM)
         
         s.bind((host,port))
-        
+        self.numberofusers = 0
         s.listen(1)
         self.serverThread = self.startServer
         self.connectionThread = threading.Thread(target=self.new_connection, args=(s,))
-        self.messageThread = threading.Thread(target=self.user_messages,args=(s,))
+        self.tLock = threading.Lock()
         self.screen = mainScreen(self,parent=self,server=self.serverThread,socket=s)
         self.SetClientSize(self.screen.GetBestSize())
         self.connected = True
         self.userlist = []
+        self.usernumber = {}
         
         self.Update()
    
@@ -62,7 +63,7 @@ class mainwindow(wx.Frame):
     def startServer(self, s):
 
         self.connectionThread.start()
-        self.messageThread.start()
+        
 
     # create initial database #
         
@@ -80,70 +81,79 @@ class mainwindow(wx.Frame):
           while self.connected:
             try:
                 # add device to users list #
+                
                 c,addr = s.accept()
                 self.screen.logger.AppendText('Connection from: {}, {} \n'.format(str(addr),str(c)))
-                self.userlist.append((c,addr))
+                messageThread = threading.Thread(target=self.user_messages,args=(c,addr))
+                messageThread.start()
+                self.usernumber[c]=self.numberofusers
+                self.userlist.append((c,messageThread))
+                self.numberofusers +=1
+                
                
             except Exception as e:
                 self.screen.logger.AppendText(str(e))
             else:
                 pass
     # get messages from users #
-    def user_messages(self,s):
+    def user_messages(self,s,addr):
         while self.connected:
-            x = 0
-            for user in self.userlist:
-                try:
+            try:
 
-                    # get message #
-                    data = user[0].recv(1000000)
-                    self.screen.logger.AppendText('request from {}: {} \n'.format(user[1],data.decode()))
-                    data = data.decode()
+                # get message #
+                
+                data = s.recv(1000000)
+                self.tLock.acquire()
+                self.screen.logger.AppendText('request from {}: {} \n'.format(addr,data.decode()))
+                data = data.decode()
         
-                    data = json.loads(data)
+                data = json.loads(data)
 
                     # handle log In request #
-                    if data['tag'] == 'logIn':
-                        self.screen.logger.AppendText('User {}: requests login \n'.format(data['username']))
-                        user[0].send(self.getlogin(data))
+                if data['tag'] == 'logIn':
+                    self.screen.logger.AppendText('User {}: requests login \n'.format(data['username']))
+                    s.send(self.getlogin(data))
 
                     # handle new user requset#
-                    if data['tag'] == 'createNewUser':
-                        self.screen.logger.AppendText('User {}: requests to be a member \n'.format(data['username']))                              
-                        user[0].send(self.create_new_user(data))
+                if data['tag'] == 'createNewUser':
+                    self.screen.logger.AppendText('User {}: requests to be a member \n'.format(data['username']))                              
+                    s.send(self.create_new_user(data))
 
                     # handle job searcch request #
-                    if data['tag'] == 'search_request':
-                        self.screen.logger.AppendText('User {}: requests for jobs \n'.format(data['username']))         
-                        user[0].send(self.get_search(data))
+                if data['tag'] == 'search_request':
+                    self.screen.logger.AppendText('User {}: requests for jobs \n'.format(data['username']))         
+                    s.send(self.get_search(data))
 
                     # handle new job request #
-                    if data['tag'] == 'newjob':
-                        self.screen.logger.AppendText('user {}:created a new job \n'.format(data['manager']))
-                        user[0].send(self.new_job(data))
+                if data['tag'] == 'newjob':
+                    self.screen.logger.AppendText('user {}:created a new job \n'.format(data['manager']))
+                    s.send(self.new_job(data))
 
                     # handle user job request 
-                    if data['tag'] == 'myjobs':
-                        self.screen.logger.AppendText('user {}: requests presonal jobs \n'.format(data['username']))
-                        user[0].send(self.get_user_jobs(data))
+                if data['tag'] == 'myjobs':
+                    self.screen.logger.AppendText('user {}: requests presonal jobs \n'.format(data['username']))
+                    s.send(self.get_user_jobs(data))
                     
                     # all category request #
-                    if data['tag'] == 'getCategorie':
-                        self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
-                        user[0].send(self.get_category(data))
+                if data['tag'] == 'getCategorie':
+                    self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
+                    s.send(self.get_category(data))
 
-                    if data['tag'] == 'editjob':
-                        self.screen.logger.AppendText('user {}: request job edit\n'.format(data['jobinfo']['manager']))
-                        user[0].send(self.get_job_edit(data['jobinfo']))
+                if data['tag'] == 'editjob':
+                    self.screen.logger.AppendText('user {}: request job edit\n'.format(data['jobinfo']['manager']))
+                    s.send(self.get_job_edit(data['jobinfo']))
                         
                         
-                        
-                except Exception as e:
-                    self.userlist.pop(x)
-                    print(e,1)
+                  
+            except Exception as e:
+                    
+                self.userlist.pop(self.usernumber[s])
+                if self.numberofusers > 1:
+                    self.numberofusers -= 1
+                print(e,1)
 
-                finally:
-                    x += 1
+            finally:
+                    self.tLock.release()
 
     # handle job search #
     def get_search(self,data):

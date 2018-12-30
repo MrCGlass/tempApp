@@ -6,7 +6,7 @@
 mainRoot:
 	
 <mainRoot>:
-	main_window: main_window
+	main_window: main_window.__self__
 	MainWindow:
 		id:main_window
 		orientation: 'vertical'
@@ -23,8 +23,6 @@ mainRoot:
 			Button:
 				text: 'Create New'
 				on_press: root.getPress(self)
-				
-				
 		
 <LoginWindow>:	
 	name: 'login'
@@ -33,21 +31,19 @@ mainRoot:
 	name_input: name_input
 	pass_input: pass_input
 	info_label: info_label
+	exit_button: exit_button.__self__
 	Label: 
 		size_hint_y: .10
 		text: 'Welcome'
-		
 	Label:
 		id: info_label
 		text:	
 		
 		
 	BoxLayout:
-		
 		orientation: 'vertical'
 		Label:
 			text: 'Username'
-	
 		TextInput:
 			id: name_input
 			size_hint_x: .50
@@ -60,15 +56,13 @@ mainRoot:
 			size_hint_x:.50
 			id: pass_input
 			multiline: False
-		
-		
 	BoxLayout:
 		size_hint_y: .15
 		Button:
 			text: 'Enter'
 			on_press: root.parent.getPress(self)
-		
 		Button: 
+			id: exit_button
 			text: 'Exit'
 			on_press: root.parent.pageReturn(page=root.name)
 			
@@ -84,9 +78,12 @@ mainRoot:
 	info_label: info_label
 	first_nameInput: first_nameInput
 	last_nameinput: last_nameinput
+	submit_button:submit_button
+	exit_button:exit_button.__self__
+	
 	phone: phone_input
 	Label: 
-		text: 'Welcome'
+		text: 'Account Info'
 		size_hint_y: .10
 	Label:
 		id: info_label
@@ -99,7 +96,6 @@ mainRoot:
 			size_hint_y: .45
 			cols: 2
 		
-			
 			Label:
 				text: 'First Name'
 				
@@ -127,12 +123,15 @@ mainRoot:
 			TextInput:
 				id: pass_input
 				multiline: False
+				password: True
 				
 			Label:
 				text: 'Confirm Password'
+				
 			TextInput:
 				id: confirm_pass
 				multiline: False
+				password: True
 				
 			Label:
 				text: 'Email'
@@ -158,7 +157,7 @@ mainRoot:
 				id: city_input
 				multiline: False
 			Label:
-				text: 'Photo'
+				text: 'Profile Photo'
 			
 			Label:
 				text: root.file_text
@@ -166,18 +165,16 @@ mainRoot:
 			id: filechooser 
 			size_hint_y: .25
 			on_touch_up: root.load_photo(filechooser.path,filechooser.selection)
-				
-		
-		
-		
-		
+			
 	BoxLayout:
 		size_hint_y: .10
 		Button:
+			id: submit_button
 			text: 'Submit'
 			on_press: root.parent.getPress(self)
 		
 		Button: 
+			id: exit_button
 			text: 'Exit'
 			on_press: root.parent.pageReturn(root.name)
 			
@@ -186,9 +183,10 @@ mainRoot:
 	job_button:job_button
 	name: 'acctpage'
 	search_button:search_button
-	exit_button:exit_button
-	my_jobButton: my_jobButton
+	exit_button:exit_button.__self__
 	user_image:user_image
+	main_button:main_button
+	exit_button: exit_button.__self__
 	BoxLayout:
 		id:mainlayout
 		acct_info: acct_info
@@ -205,12 +203,6 @@ mainRoot:
 				id:user_image
 				size_hint_y: .35
 			
-						
-						
-					
-						
-				
-			
 			BoxLayout:
 				orientation: 'vertical'
 				size_hint_y: .60
@@ -225,36 +217,39 @@ mainRoot:
 			size_hint_x: .60		
 			Label:
 				size_hint_y: .40
-				text: 'Account'
-			BoxLayout:
-				size_hint_y:.15
-				Button:
-					id: my_jobButton
-					text: 'My Jobs'
-					on_press: root.parent.getPress(self)
-					
-				Button:
-					id: bids_button
-					text: "My Bids"
-					on_press: root.parent.getPress(self)
+				text: 'My Profile'
+			Button:
+				size_hint_y: None
+				height: 44
+				id:main_button
+				text: 'menu'
+				
+
 					
 			RecycleView:
 				
 			BoxLayout:
 				size_hint_y: .15
 				Button:
+					size_hint_y: None
 					id:exit_button
+					height: 44
 					text:'Exit'
 					on_press: root.parent.pageReturn(page=root.name)
 				Button:
+					size_hint_y: None
+					height:44
 					id: search_button
 					text: 'Search Jobs'
 					on_press: root.parent.getPress(self)
 					
 				Button:
+					size_hint_y: None
+					height: 44
 					id: job_button
 					text: 'New Job'
 					on_press: root.parent.getPress(self)
+
 			
 <SearchScreen>:
 	orientation: 'vertical'
@@ -295,6 +290,7 @@ mainRoot:
 		pos: 100,0
 	
 	Button:
+		id: exit_button
 		text:'Exit'
 		size_hint_y: .10
 		on_press: root.parent.pageReturn(page=root.name)
@@ -317,6 +313,7 @@ mainRoot:
 	job_state: job_state
 	header: header
 	submit_button:submit_button
+	exit_button: exit_button.__self__
 	
 	Label:
 		id:header
@@ -366,6 +363,7 @@ mainRoot:
 			text: 'Create Job'
 			on_press: root.parent.getPress(self)
 		Button:
+			id: exit_button
 			text: 'Exit'
 			on_press: root.parent.pageReturn(root.name)
 			
@@ -378,6 +376,7 @@ mainRoot:
 	location_text: location_text
 	info_layout: info_layout
 	button_panel: button_panel
+	exit_button: exit_button.__self__
 	name: 'jobpage'
 	id:job_page
 	job:[]
@@ -418,6 +417,7 @@ mainRoot:
 		id: button_panel
 		size_hint_y: .15
 		Button:
+			id: exit_button
 			text: 'Exit'
 			on_press: root.parent.pageReturn(root.name)
 <Imagephoto>

@@ -131,7 +131,7 @@ class mainwindow(wx.Frame):
                     if data['tag'] == 'getCategorie':
                         self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
                         user[0].send(self.get_category(data))
-
+                    # user job edit #
                     if data['tag'] == 'editjob':
                         self.screen.logger.AppendText('user {}: request job edit\n'.format(data['jobinfo']['manager']))
                         user[0].send(self.get_job_edit(data['jobinfo']))
@@ -304,7 +304,8 @@ class mainwindow(wx.Frame):
             con.close()
             message = json.dumps(message)
             return message.encode()
-
+        
+    # handle user job edit #
     def get_job_edit(self,data):
 
         con = sql.connect('appdata.db')

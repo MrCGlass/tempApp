@@ -135,7 +135,6 @@ class mainwindow(wx.Frame):
                     s.send(self.get_user_jobs(data))
                     
                     # all category request #
-<<<<<<< HEAD
                     if data['tag'] == 'getCategorie':
                         self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
                         user[0].send(self.get_category(data))
@@ -144,7 +143,7 @@ class mainwindow(wx.Frame):
                         self.screen.logger.AppendText('user {}: request job edit\n'.format(data['jobinfo']['manager']))
                         user[0].send(self.get_job_edit(data['jobinfo']))
                         
-=======
+
                 if data['tag'] == 'getCategorie':
                     self.screen.logger.AppendText('user {}: requests all categories\n'.format(data['username']))
                     s.send(self.get_category(data))
@@ -152,7 +151,7 @@ class mainwindow(wx.Frame):
                 if data['tag'] == 'editjob':
                     self.screen.logger.AppendText('user {}: request job edit\n'.format(data['jobinfo']['manager']))
                     s.send(self.get_job_edit(data['jobinfo']))
->>>>>>> e014ab10dc697f1b7dabbff4a52c4b11a3129531
+
                         
                         
                   

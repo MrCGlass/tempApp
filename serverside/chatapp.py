@@ -1,8 +1,15 @@
 import wx,socket,asyncio
-import threading, json,sqlite3 as sql
-
+import threading,os,json,sqlite3 as sql
+from kmip import KmipClient
+from OpenSSL import crypto
 
 ## Main widget Screen (needs update) ##
+
+class keyClient(KmipClient):
+    def __init__(self,*args,**kwargs):
+        super(keyClient,self).__init__(*args,**kwargs)
+
+
 class mainScreen(wx.Panel):
     
     def __init__(self,*args,**kwargs):
@@ -30,16 +37,17 @@ class mainScreen(wx.Panel):
 
 ## root window ##
 class mainwindow(wx.Frame):
-    
+    config_path=os.getcwd() +'/configfiles/server.conf',
     con = sql.Connection('appdata.db')
     cursor = con.cursor()
+    
         
     def __init__(self,*args,**kwargs):
         super(mainwindow,self).__init__(*args,**kwargs)
 
         
         self.create_base(self.cursor)
-        host = '10.0.0.83'
+        host = socket.gethostbyname(socket.gethostname())
         
         port = 7000
         
@@ -58,6 +66,12 @@ class mainwindow(wx.Frame):
         self.usernumber = {}
         
         self.Update()
+
+        self.keyclient = keyClient(
+            username='appserver',
+            password='collective',
+            config_file=os.getcwd() +'/configfiles/client.conf'
+            )
    
     # start server threads #
     def startServer(self, s):
@@ -357,12 +371,14 @@ class mainwindow(wx.Frame):
     # server stop handler( needs update) #
     def stopServer(self,event):
         self.connected = False
+        self.keyclient.open()
         print('false')
 
 
 async def main():
     app = wx.App()
-    window = mainwindow(None,wx.ID_ANY,size=(900,600))
+    window = mainwindow(None,wx.ID_ANY,
+                        size=(900,600))
     window.Show(True)
 
     app.MainLoop()

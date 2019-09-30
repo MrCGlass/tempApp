@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.properties import NumericProperty, ListProperty
-from kivy.uix.listview import ListItemButton
+from kivy.uix.recycleview import RecycleView
 from kivy.network.urlrequest import UrlRequest
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -87,7 +87,7 @@ class SearchScreen(BoxLayout):
         return {'jobs':job,'data_item':self.data_item}
             
 ## Job search list Buttons ##
-class JobListbutton(ListItemButton):
+class JobListbutton(RecycleView):
     jobs = StringProperty()
     data_item = ListProperty()
 

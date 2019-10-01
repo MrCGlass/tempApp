@@ -3,7 +3,7 @@ import threading,os,json,sqlite3 as sql
 from kmip import KmipClient
 from OpenSSL import crypto
 
-## Main widget Screen (needs update) ##
+## Main widget Screen (needs update) ###
 
 class keyClient(KmipClient):
     def __init__(self,*args,**kwargs):
